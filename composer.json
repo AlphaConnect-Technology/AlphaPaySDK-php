@@ -1,0 +1,30 @@
+{
+    "name": "alphapay/alphapay-php",
+    "description": "Official PHP SDK for the AlphaPay payment aggregator API.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["alphapay", "payments", "mobile-money", "payment-gateway", "africa"],
+    "require": {
+        "php": ">=8.0",
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "AlphaPay\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "AlphaPay\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "lint": "php -l src/AlphaPayClient.php"
+    },
+    "minimum-stability": "stable"
+}
