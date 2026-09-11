@@ -69,6 +69,40 @@ if ($path === '/echo-headers/' && $method === 'POST') {
     exit;
 }
 
+if ($path === '/payment-links/public/demo-slug/' && $method === 'GET') {
+    echo json_encode([
+        'success' => true,
+        'data' => [
+            'slug' => 'demo-slug',
+            'facebook_pixel_id' => '123456789012345',
+            'google_ads_id' => 'AW-123456789',
+            'custom_fields' => [['key' => 'reference_client', 'label' => 'Référence client', 'required' => true]],
+        ],
+        'code' => 200,
+    ]);
+    exit;
+}
+
+if ($path === '/payment-links/' && $method === 'POST') {
+    $body = json_decode((string) file_get_contents('php://input'), true);
+    echo json_encode(['success' => true, 'data' => $body, 'code' => 201]);
+    exit;
+}
+
+if ($path === '/payment-links/public/demo-slug/checkout/' && $method === 'POST') {
+    $body = json_decode((string) file_get_contents('php://input'), true);
+    echo json_encode([
+        'success' => true,
+        'data' => [
+            'slug' => 'checkout-slug',
+            'checkout_url' => 'https://checkout.example.test/checkout-slug',
+            'received' => $body,
+        ],
+        'code' => 201,
+    ]);
+    exit;
+}
+
 if ($path === '/transactions/' && $method === 'GET') {
     // Reflète TransactionListView (CreatedAtCursorPagination) : pas de "count".
     echo json_encode([

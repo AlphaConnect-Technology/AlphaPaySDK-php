@@ -25,7 +25,7 @@ final class PaymentLinksResource
     }
 
     /**
-     * @param array{name: string, description?: string, amount_type?: string, amount?: int|float|string|null, min_amount?: int|float|string|null, currency: string, expires_at?: ?string, usage_limit?: ?int} $params
+     * @param array{name: string, description?: string, amount_type?: string, amount?: int|float|string|null, min_amount?: int|float|string|null, currency: string, expires_at?: ?string, usage_limit?: ?int, require_phone?: bool, facebook_pixel_id?: string, google_ads_id?: string, custom_fields?: array<int, array{key: string, label: string, required?: bool}>, show_confirmation_page?: bool, redirect_url?: string} $params
      * @return array<string, mixed>
      */
     public function create(array $params): array
@@ -37,6 +37,21 @@ final class PaymentLinksResource
     public function get(string $id): array
     {
         return $this->http->request('GET', "/payment-links/{$id}/");
+    }
+
+    /** @return array<string, mixed> */
+    public function getPublic(string $slug): array
+    {
+        return $this->http->request('GET', "/payment-links/public/{$slug}/");
+    }
+
+    /**
+     * @param array{amount?: int|float|string, customer: array{email: string, first_name: string, last_name: string, phone?: string}, custom_field_values?: array<string, scalar|null>} $params
+     * @return array{slug: string, checkout_url: string}
+     */
+    public function createPublicCheckout(string $slug, array $params): array
+    {
+        return $this->http->request('POST', "/payment-links/public/{$slug}/checkout/", [], $params);
     }
 
     /** @param array<string, mixed> $params */

@@ -101,6 +101,57 @@ final class ClientTest extends TestCase
         self::assertSame(['id' => 'tx_1', 'reference' => 'REF1'], $tx);
     }
 
+    public function testReadsPublicPaymentLinkOptions(): void
+    {
+        $client = new AlphaPayClient('sk_test_abc', self::$baseUrl);
+
+        $link = $client->paymentLinks->getPublic('demo-slug');
+
+        self::assertSame('123456789012345', $link['facebook_pixel_id']);
+        self::assertSame('AW-123456789', $link['google_ads_id']);
+        self::assertSame([
+            ['key' => 'reference_client', 'label' => 'Référence client', 'required' => true],
+        ], $link['custom_fields']);
+    }
+
+    public function testSendsPaymentLinkTrackingAndCustomFields(): void
+    {
+        $client = new AlphaPayClient('sk_test_abc', self::$baseUrl);
+
+        $link = $client->paymentLinks->create([
+            'name' => 'Lien de test',
+            'amount_type' => 'FIXED',
+            'amount' => 5000,
+            'currency' => 'XOF',
+            'facebook_pixel_id' => '123456789012345',
+            'google_ads_id' => 'AW-123456789',
+            'custom_fields' => [
+                ['key' => 'reference_client', 'label' => 'Référence client', 'required' => true],
+            ],
+        ]);
+
+        self::assertSame('123456789012345', $link['facebook_pixel_id']);
+        self::assertSame('AW-123456789', $link['google_ads_id']);
+        self::assertSame('reference_client', $link['custom_fields'][0]['key']);
+    }
+
+    public function testCreatesCheckoutFromPublicPaymentLink(): void
+    {
+        $client = new AlphaPayClient('sk_test_abc', self::$baseUrl);
+
+        $result = $client->paymentLinks->createPublicCheckout('demo-slug', [
+            'customer' => [
+                'email' => 'client@example.com',
+                'first_name' => 'Client',
+                'last_name' => 'Test',
+            ],
+            'custom_field_values' => ['reference_client' => 'CMD-42'],
+        ]);
+
+        self::assertSame('checkout-slug', $result['slug']);
+        self::assertSame('CMD-42', $result['received']['custom_field_values']['reference_client']);
+    }
+
     public function testMapsA400FieldValidationErrorToAlphaPayValidationException(): void
     {
         $client = new AlphaPayClient('sk_test_abc', self::$baseUrl);

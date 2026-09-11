@@ -44,7 +44,7 @@ final class WebhookEndpointsResource
      * ATTENTION : dashboard-only -- 403 via clé API.
      * `signing_secret` n'est présent en clair dans la réponse qu'à la création (ou après rotateSecret()) -- jamais récupérable ensuite.
      *
-     * @param array{url: string, description?: string, environment: string, signing_secret?: string} $params
+    * @param array{url: string, description?: string, environment: string, signing_secret?: string, payment_link?: string|null} $params
      * @return array<string, mixed>
      */
     public function create(array $params): array
@@ -61,7 +61,7 @@ final class WebhookEndpointsResource
     /**
      * ATTENTION : dashboard-only -- 403 via clé API.
      *
-     * @param array{url?: string, description?: string, is_active?: bool} $params
+    * @param array{url?: string, description?: string, is_active?: bool, payment_link?: string|null} $params
      */
     public function update(string $id, array $params): array
     {

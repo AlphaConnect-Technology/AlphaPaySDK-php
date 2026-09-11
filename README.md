@@ -33,7 +33,12 @@ $payment = $alphapay->transactions->payinInitialize(
         'currency' => 'XOF',
         'country' => 'BJ',
         'network' => 'mtn_bj',
-        'customer' => ['full_name' => 'Ayaba Client', 'phone' => '+22900000000'],
+        'customer' => [
+            'email' => 'ayaba@example.com',
+            'first_name' => 'Ayaba',
+            'last_name' => 'Client',
+            'phone' => '+22900000000',
+        ],
         'description' => 'Commande #1234',
     ],
     idempotencyKey: true // recommandé : évite un double push en cas de retry réseau
@@ -48,6 +53,35 @@ minuscules, `<opérateur>_<pays ISO2>` (ex. `mtn_bj`, `moov_ci`,
 type Pawapay (`MTN_MOMO_BEN`). Codes globaux hors mobile money : `card`,
 `crypto`. Liste exacte par pays : endpoint `/networks/` (référentiel pas
 encore couvert par ce SDK, cf. section "Ressources couvertes").
+
+### Options avancées des liens
+
+`paymentLinks->create()` et `update()` acceptent aussi `require_phone`,
+`facebook_pixel_id`, `google_ads_id`, `custom_fields`,
+`show_confirmation_page` et `redirect_url`.
+
+```php
+$link = $alphapay->paymentLinks->create([
+    'name' => 'Facture #42',
+    'amount_type' => 'FIXED',
+    'amount' => 5000,
+    'currency' => 'XOF',
+    'google_ads_id' => 'AW-123456789',
+    'custom_fields' => [
+        ['key' => 'reference_client', 'label' => 'Référence client', 'required' => true],
+    ],
+]);
+
+$publicLink = $alphapay->paymentLinks->getPublic($link['slug']);
+$checkout = $alphapay->paymentLinks->createPublicCheckout($link['slug'], [
+    'customer' => [
+        'email' => 'client@example.com',
+        'first_name' => 'Client',
+        'last_name' => 'Test',
+    ],
+    'custom_field_values' => ['reference_client' => 'CMD-42'],
+]);
+```
 
 ## Sandbox vs live
 
@@ -142,7 +176,7 @@ publique.
 | Ressource | Méthodes | Via clé API |
 |---|---|---|
 | `transactions` | `list`, `get`, `export`, `downloadInvoice`, `payinInitialize/payinVerify/payinRetry/payinConfirmOtp`, `payoutInitialize/payoutVerify` | ✅ |
-| `paymentLinks` | `list`, `create`, `get`, `update`, `delete` | ✅ |
+| `paymentLinks` | `list`, `create`, `get`, `getPublic`, `createPublicCheckout`, `update`, `delete` | ✅ / public pour les 2 méthodes publiques |
 | `checkoutSessions` | `list`, `create`, `get`, `cancel` | ✅ |
 | `customers` | `list`, `create`, `get`, `update`, `delete`, `transactions` | ✅ |
 | `settlements` | `list`, `create`, `get`, `cancel` | ❌ dashboard-only |
