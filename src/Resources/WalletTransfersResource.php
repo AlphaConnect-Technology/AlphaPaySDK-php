@@ -17,8 +17,11 @@ use AlphaPay\Http;
  */
 final class WalletTransfersResource
 {
-    public function __construct(private readonly Http $http)
+    private Http $http;
+
+    public function __construct(Http $http)
     {
+        $this->http = $http;
     }
 
     /**
@@ -32,9 +35,10 @@ final class WalletTransfersResource
 
     /**
      * @param array{from_country: string, to_country: string, from_amount: int|float|string} $params
+     * @param string|bool|null $idempotencyKey
      * @return array<string, mixed>
      */
-    public function create(array $params, string|bool|null $idempotencyKey = null): array
+    public function create(array $params, $idempotencyKey = null): array
     {
         return $this->http->request('POST', '/wallet-transfers/', [], $params, $idempotencyKey);
     }

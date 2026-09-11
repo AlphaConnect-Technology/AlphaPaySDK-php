@@ -21,19 +21,21 @@ class AlphaPayException extends Exception
 {
     private int $status;
     private ?string $errorCode;
-    private mixed $raw;
+    /** @var mixed */
+    private $raw;
     /** @var array<string, string[]>|null */
     private ?array $fieldErrors;
     private ?string $requestId;
 
     /**
+     * @param mixed $raw
      * @param array<string, string[]>|null $fieldErrors
      */
     public function __construct(
         string $message,
         int $status,
         ?string $errorCode = null,
-        mixed $raw = null,
+        $raw = null,
         ?array $fieldErrors = null,
         ?string $requestId = null,
         ?Throwable $previous = null
@@ -57,8 +59,11 @@ class AlphaPayException extends Exception
         return $this->errorCode;
     }
 
-    /** Corps d'erreur brut, tel que renvoyé par l'API. */
-    public function getRaw(): mixed
+    /**
+     * Corps d'erreur brut, tel que renvoyé par l'API.
+     * @return mixed
+     */
+    public function getRaw()
     {
         return $this->raw;
     }
@@ -77,29 +82,39 @@ class AlphaPayException extends Exception
     /**
      * Construit l'exception normalisée à partir de la réponse HTTP. `$body`
      * est déjà le contenu de la clé "error" de l'enveloppe (pas l'enveloppe entière).
+     *
+     * @param mixed $body
      */
-    public static function fromResponse(int $status, mixed $body, ?string $requestId = null): self
+    public static function fromResponse(int $status, $body, ?string $requestId = null): self
     {
         [$message, $errorCode, $fieldErrors] = self::interpretErrorBody($body);
 
-        $class = match (true) {
-            $status === 401 => AlphaPayAuthenticationException::class,
-            $status === 403 => AlphaPayPermissionException::class,
-            $status === 404 => AlphaPayNotFoundException::class,
-            $status === 409 => AlphaPayIdempotencyException::class,
-            $status === 429 => AlphaPayRateLimitException::class,
-            $status === 400 || $status === 422 => AlphaPayValidationException::class,
-            $status >= 500 => AlphaPayServerException::class,
-            default => self::class,
-        };
+        if ($status === 401) {
+            $class = AlphaPayAuthenticationException::class;
+        } elseif ($status === 403) {
+            $class = AlphaPayPermissionException::class;
+        } elseif ($status === 404) {
+            $class = AlphaPayNotFoundException::class;
+        } elseif ($status === 409) {
+            $class = AlphaPayIdempotencyException::class;
+        } elseif ($status === 429) {
+            $class = AlphaPayRateLimitException::class;
+        } elseif ($status === 400 || $status === 422) {
+            $class = AlphaPayValidationException::class;
+        } elseif ($status >= 500) {
+            $class = AlphaPayServerException::class;
+        } else {
+            $class = self::class;
+        }
 
         return new $class($message, $status, $errorCode, $body, $fieldErrors, $requestId);
     }
 
     /**
+     * @param mixed $body
      * @return array{0: string, 1: ?string, 2: ?array<string, string[]>}
      */
-    private static function interpretErrorBody(mixed $body): array
+    private static function interpretErrorBody($body): array
     {
         if ($body === null) {
             return ['Erreur AlphaPay inconnue.', null, null];

@@ -20,11 +20,13 @@ use AlphaPay\Http;
  */
 final class WebhookEndpointsResource
 {
-    public readonly WebhookSubscriptionsResource $subscriptions;
-    public readonly WebhookLogsResource $logs;
+    public WebhookSubscriptionsResource $subscriptions;
+    public WebhookLogsResource $logs;
+    private Http $http;
 
-    public function __construct(private readonly Http $http)
+    public function __construct(Http $http)
     {
+        $this->http = $http;
         $this->subscriptions = new WebhookSubscriptionsResource($http);
         $this->logs = new WebhookLogsResource($http);
     }

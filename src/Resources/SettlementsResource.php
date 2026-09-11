@@ -23,8 +23,11 @@ use AlphaPay\Http;
  */
 final class SettlementsResource
 {
-    public function __construct(private readonly Http $http)
+    private Http $http;
+
+    public function __construct(Http $http)
     {
+        $this->http = $http;
     }
 
     /**
@@ -41,9 +44,10 @@ final class SettlementsResource
      * recommandé avec $idempotencyKey.
      *
      * @param array{country: string, requested_amount: int|float|string, payout_method: string} $params
+     * @param string|bool|null $idempotencyKey
      * @return array<string, mixed>
      */
-    public function create(array $params, string|bool|null $idempotencyKey = null): array
+    public function create(array $params, $idempotencyKey = null): array
     {
         return $this->http->request('POST', '/settlements/', [], $params, $idempotencyKey);
     }

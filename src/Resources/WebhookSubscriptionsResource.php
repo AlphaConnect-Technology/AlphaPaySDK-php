@@ -8,8 +8,11 @@ use AlphaPay\Http;
 
 final class WebhookSubscriptionsResource
 {
-    public function __construct(private readonly Http $http)
+    private Http $http;
+
+    public function __construct(Http $http)
     {
+        $this->http = $http;
     }
 
     /**

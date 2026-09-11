@@ -8,8 +8,11 @@ use AlphaPay\Http;
 
 final class CustomersResource
 {
-    public function __construct(private readonly Http $http)
+    private Http $http;
+
+    public function __construct(Http $http)
     {
+        $this->http = $http;
     }
 
     /**
@@ -22,6 +25,13 @@ final class CustomersResource
     }
 
     /**
+     * ATTENTION : `country` ici est l'UUID de la ressource pays (Customer.country
+     * est une ForeignKey côté API), PAS le code ISO2 ("BJ") utilisé partout
+     * ailleurs dans ce SDK (payin/payout/settlements). Pas encore de ressource
+     * `countries` dans ce SDK pour résoudre l'UUID -- passer par GET /countries/
+     * directement (via Http::request()) ou relever l'UUID depuis le dashboard.
+     * Vérifié en conditions réelles : `country: 'BJ'` renvoie 400 "n'est pas un UUID valide".
+     *
      * @param array{phone?: string, country: string, full_name?: string, email?: string} $params
      * @return array<string, mixed>
      */

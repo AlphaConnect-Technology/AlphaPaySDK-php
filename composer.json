@@ -5,7 +5,7 @@
     "license": "MIT",
     "keywords": ["alphapay", "payments", "mobile-money", "payment-gateway", "africa"],
     "require": {
-        "php": ">=8.0",
+        "php": ">=7.4",
         "ext-curl": "*",
         "ext-json": "*"
     },
@@ -24,7 +24,7 @@
     },
     "scripts": {
         "test": "phpunit",
-        "lint": "php -l src/AlphaPayClient.php"
+        "lint": "find src -name '*.php' -print0 | xargs -0 -n1 -P4 php -l"
     },
     "minimum-stability": "stable"
 }

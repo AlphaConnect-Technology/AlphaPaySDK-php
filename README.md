@@ -32,7 +32,7 @@ $payment = $alphapay->transactions->payinInitialize(
         'amount' => 5000,
         'currency' => 'XOF',
         'country' => 'BJ',
-        'network' => 'MTN_BJ',
+        'network' => 'mtn_bj',
         'customer' => ['full_name' => 'Ayaba Client', 'phone' => '+22900000000'],
         'description' => 'Commande #1234',
     ],
@@ -41,6 +41,13 @@ $payment = $alphapay->transactions->payinInitialize(
 
 echo $payment['status'], "\n";
 ```
+
+`network` (et `method` pour un payout) attend le code interne AlphaPay —
+minuscules, `<opérateur>_<pays ISO2>` (ex. `mtn_bj`, `moov_ci`,
+`orange_sn`), **pas** l'identifiant propriétaire d'un gateway sous-jacent
+type Pawapay (`MTN_MOMO_BEN`). Codes globaux hors mobile money : `card`,
+`crypto`. Liste exacte par pays : endpoint `/networks/` (référentiel pas
+encore couvert par ce SDK, cf. section "Ressources couvertes").
 
 ## Sandbox vs live
 

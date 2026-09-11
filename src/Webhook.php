@@ -37,7 +37,7 @@ final class Webhook
     public static function verifySignature(
         string $payload,
         string $signature,
-        string|int $timestamp,
+        $timestamp,
         string $secret,
         int $toleranceSeconds = self::DEFAULT_TOLERANCE_SECONDS
     ): array {
@@ -60,7 +60,7 @@ final class Webhook
 
         try {
             $event = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
-        } catch (\JsonException) {
+        } catch (\JsonException $e) {
             throw new AlphaPayWebhookSignatureException('Corps de webhook signé valide mais illisible (JSON invalide).');
         }
 

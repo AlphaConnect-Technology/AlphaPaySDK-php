@@ -9,8 +9,11 @@ use AlphaPay\Http;
 /** Whitelist IP requise pour les payouts -- partagée par toutes les clés du marchand (cf. apps.api_keys.models.MerchantIpWhitelistEntry côté API). Fonctionne bien via clé API -- vérifié en conditions réelles. */
 final class IpWhitelistResource
 {
-    public function __construct(private readonly Http $http)
+    private Http $http;
+
+    public function __construct(Http $http)
     {
+        $this->http = $http;
     }
 
     /**

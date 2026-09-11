@@ -23,8 +23,8 @@ final class Http
     private const DEFAULT_MAX_RETRIES = 2;
 
     private string $apiKey;
-    public readonly string $baseUrl;
-    public readonly string $environment;
+    public string $baseUrl;
+    public string $environment;
     private int $timeout;
     private int $maxRetries;
 
@@ -38,7 +38,7 @@ final class Http
             throw new \InvalidArgumentException('AlphaPayClient: `apiKey` est requis.');
         }
         $this->apiKey = $apiKey;
-        $this->environment = str_starts_with($apiKey, 'sk_live_') ? 'live' : 'sandbox';
+        $this->environment = $this->startsWith($apiKey, 'sk_live_') ? 'live' : 'sandbox';
         $this->baseUrl = rtrim($baseUrl ?? self::DEFAULT_BASE_URL, '/');
         $this->timeout = $timeout;
         $this->maxRetries = $maxRetries;
@@ -47,19 +47,21 @@ final class Http
     /**
      * @param array<string, mixed> $query
      * @param array<string, mixed>|null $body
+     * @param string|bool|null $idempotencyKey
+     * @return mixed
      */
     public function request(
         string $method,
         string $path,
         array $query = [],
         ?array $body = null,
-        string|bool|null $idempotencyKey = null
-    ): mixed {
+        $idempotencyKey = null
+    ) {
         // `$path` est une URL absolue quand on suit un lien "next"/"previous"
         // renvoyé tel quel par l'API (cf. Pagination::paginate()) -- déjà
         // complète, avec sa propre query string ; ne jamais la préfixer par
         // baseUrl ni y rajouter `$query` par-dessus.
-        $url = str_starts_with($path, 'http://') || str_starts_with($path, 'https://')
+        $url = $this->startsWith($path, 'http://') || $this->startsWith($path, 'https://')
             ? $path
             : $this->baseUrl . $path . $this->buildQueryString($query);
 
@@ -152,7 +154,8 @@ final class Http
         ];
     }
 
-    private function attempt(string $method, string $url, array $headers, ?string $jsonBody): mixed
+    /** @return mixed */
+    private function attempt(string $method, string $url, array $headers, ?string $jsonBody)
     {
         $ch = curl_init($url);
         curl_setopt_array($ch, [
@@ -191,7 +194,7 @@ final class Http
         if ($body !== '') {
             try {
                 $json = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
-            } catch (\JsonException) {
+            } catch (\JsonException $e) {
                 // Réponse non-JSON (page d'erreur d'un proxy en amont) -- traité
                 // ci-dessous comme un succès sans corps ou une erreur au message générique.
             }
@@ -231,6 +234,14 @@ final class Http
     private function randomIdempotencyKey(): string
     {
         return 'idem_' . bin2hex(random_bytes(16));
+    }
+
+    // Équivalent de str_starts_with() (PHP 8.0+), indisponible en PHP 7.4 --
+    // ce SDK vise 7.4 pour rester compatible avec l'hébergement WordPress/
+    // WooCommerce mutualisé (cf. composer.json).
+    private function startsWith(string $haystack, string $needle): bool
+    {
+        return substr($haystack, 0, strlen($needle)) === $needle;
     }
 
     private function extractHeader(string $rawHeaders, string $name): ?string

@@ -9,8 +9,11 @@ use AlphaPay\Http;
 /** Soldes par pays/devise et grand livre des mouvements -- lecture seule (les mouvements naissent des autres ressources : transactions, reversements, transferts). */
 final class BalancesResource
 {
-    public function __construct(private readonly Http $http)
+    private Http $http;
+
+    public function __construct(Http $http)
     {
+        $this->http = $http;
     }
 
     /**

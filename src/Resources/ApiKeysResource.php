@@ -17,10 +17,12 @@ use AlphaPay\Http;
  */
 final class ApiKeysResource
 {
-    public readonly IpWhitelistResource $ipWhitelist;
+    public IpWhitelistResource $ipWhitelist;
+    private Http $http;
 
-    public function __construct(private readonly Http $http)
+    public function __construct(Http $http)
     {
+        $this->http = $http;
         $this->ipWhitelist = new IpWhitelistResource($http);
     }
 

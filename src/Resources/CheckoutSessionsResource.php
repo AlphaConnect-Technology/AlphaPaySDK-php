@@ -14,8 +14,11 @@ use AlphaPay\Http;
  */
 final class CheckoutSessionsResource
 {
-    public function __construct(private readonly Http $http)
+    private Http $http;
+
+    public function __construct(Http $http)
     {
+        $this->http = $http;
     }
 
     /**
@@ -29,9 +32,10 @@ final class CheckoutSessionsResource
 
     /**
      * @param array{amount: int|float|string, currency: string, description?: string, country?: string, customer_email: string, customer_name: string, customer_phone?: string, return_url?: string, metadata?: array<string, mixed>} $params
+     * @param string|bool|null $idempotencyKey
      * @return array<string, mixed>
      */
-    public function create(array $params, string|bool|null $idempotencyKey = null): array
+    public function create(array $params, $idempotencyKey = null): array
     {
         return $this->http->request('POST', '/checkout-sessions/', [], $params, $idempotencyKey);
     }

@@ -25,25 +25,25 @@ use AlphaPay\Resources\WebhookEndpointsResource;
  *     'amount' => 5000,
  *     'currency' => 'XOF',
  *     'country' => 'BJ',
- *     'network' => 'MTN_BJ',
+ *     'network' => 'mtn_bj',
  *     'customer' => ['phone' => '+22900000000', 'full_name' => 'Client Test'],
  * ], idempotencyKey: true);
  */
 final class AlphaPayClient
 {
-    public readonly string $environment;
+    public string $environment;
     /** Client HTTP bas niveau -- nécessaire à Pagination::paginate() pour suivre un lien "next" (URL absolue renvoyée par l'API), pas destiné à un usage direct en dehors de ce cas. */
-    public readonly Http $http;
+    public Http $http;
 
-    public readonly TransactionsResource $transactions;
-    public readonly PaymentLinksResource $paymentLinks;
-    public readonly CheckoutSessionsResource $checkoutSessions;
-    public readonly CustomersResource $customers;
-    public readonly SettlementsResource $settlements;
-    public readonly WalletTransfersResource $walletTransfers;
-    public readonly BalancesResource $balances;
-    public readonly ApiKeysResource $apiKeys;
-    public readonly WebhookEndpointsResource $webhookEndpoints;
+    public TransactionsResource $transactions;
+    public PaymentLinksResource $paymentLinks;
+    public CheckoutSessionsResource $checkoutSessions;
+    public CustomersResource $customers;
+    public SettlementsResource $settlements;
+    public WalletTransfersResource $walletTransfers;
+    public BalancesResource $balances;
+    public ApiKeysResource $apiKeys;
+    public WebhookEndpointsResource $webhookEndpoints;
 
     public function __construct(
         string $apiKey,

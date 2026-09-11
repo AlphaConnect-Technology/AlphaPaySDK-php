@@ -14,8 +14,11 @@ use AlphaPay\Http;
  */
 final class TransactionsResource
 {
-    public function __construct(private readonly Http $http)
+    private Http $http;
+
+    public function __construct(Http $http)
     {
+        $this->http = $http;
     }
 
     /**
@@ -68,9 +71,10 @@ final class TransactionsResource
      * second prompt de paiement vers le client final.
      *
      * @param array{merchant?: string, amount: int|float|string, currency: string, country: string, description?: string, customer: array{full_name?: string, email?: string, phone: string}, network: string, return_url?: string, metadata?: array<string, mixed>, fee_charge_mode?: ?string, preferred_gateway?: string, otp?: string} $params
+     * @param string|bool|null $idempotencyKey
      * @return array{message: string, id: string, status: string, checkout_url: string, instructions: mixed}
      */
-    public function payinInitialize(array $params, string|bool|null $idempotencyKey = null): array
+    public function payinInitialize(array $params, $idempotencyKey = null): array
     {
         return $this->http->request('POST', '/payments/softpay/', [], $params, $idempotencyKey);
     }
@@ -83,9 +87,10 @@ final class TransactionsResource
 
     /**
      * @param array{preferred_gateway?: string} $params
+     * @param string|bool|null $idempotencyKey
      * @return array<string, mixed>
      */
-    public function payinRetry(string $paymentId, array $params = [], string|bool|null $idempotencyKey = null): array
+    public function payinRetry(string $paymentId, array $params = [], $idempotencyKey = null): array
     {
         return $this->http->request('POST', "/payments/{$paymentId}/retry/", [], $params, $idempotencyKey);
     }
@@ -102,9 +107,10 @@ final class TransactionsResource
      * elle, un doublon débite deux fois le MÊME wallet.
      *
      * @param array{merchant?: string, amount: int|float|string, currency: string, country: string, description?: string, customer: array{full_name?: string, email?: string, phone: string}, metadata?: array<string, mixed>, method: string, recipient: array<string, mixed>, fee_charge_mode?: ?string, preferred_gateway?: string} $params
+     * @param string|bool|null $idempotencyKey
      * @return array{message: string, id: string}
      */
-    public function payoutInitialize(array $params, string|bool|null $idempotencyKey = null): array
+    public function payoutInitialize(array $params, $idempotencyKey = null): array
     {
         return $this->http->request('POST', '/payouts/initialize/', [], $params, $idempotencyKey);
     }
