@@ -26,7 +26,7 @@ use AlphaPay\Resources\WebhookEndpointsResource;
  *     'currency' => 'XOF',
  *     'country' => 'BJ',
  *     'network' => 'mtn_bj',
- *     'customer' => ['phone' => '+22900000000', 'full_name' => 'Client Test'],
+ *     'customer' => ['email' => 'client@exemple.com', 'first_name' => 'Client', 'last_name' => 'Test', 'phone' => '+22900000000'],
  * ], idempotencyKey: true);
  */
 final class AlphaPayClient
