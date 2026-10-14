@@ -103,6 +103,55 @@ if ($path === '/payment-links/public/demo-slug/checkout/' && $method === 'POST')
     exit;
 }
 
+// Reflète WalletTransferListCreateView : refus métier -> 422 {"message", "code"}
+// (SettlementError), sinon 201 avec le transfert sérialisé.
+if ($path === '/wallet-transfers/' && $method === 'POST') {
+    $body = json_decode((string) file_get_contents('php://input'), true);
+    if ($body['from_country'] === $body['to_country']) {
+        http_response_code(422);
+        echo json_encode([
+            'success' => false,
+            'error' => ['message' => 'Le pays source et le pays cible doivent être différents.', 'code' => 'same_country'],
+            'code' => 422,
+        ]);
+        exit;
+    }
+    $headers = getallheaders();
+    http_response_code(201);
+    echo json_encode([
+        'success' => true,
+        'data' => [
+            'id' => 'wt_1',
+            'from_country' => $body['from_country'],
+            'to_country' => $body['to_country'],
+            'from_amount' => (string) $body['from_amount'],
+            'status' => 'PENDING',
+            // Pas un champ de l'API : permet au test de vérifier le header envoyé.
+            'echo_idempotency_key' => $headers['Idempotency-Key'] ?? null,
+        ],
+        'code' => 201,
+    ]);
+    exit;
+}
+
+if ($path === '/wallet-transfers/' && $method === 'GET') {
+    echo json_encode([
+        'success' => true,
+        'data' => ['count' => 1, 'next' => null, 'previous' => null, 'results' => [['id' => 'wt_1', 'echo_query' => $_GET]]],
+        'code' => 200,
+    ]);
+    exit;
+}
+
+if ($path === '/wallet-transfers/wt_1/' && $method === 'GET') {
+    echo json_encode([
+        'success' => true,
+        'data' => ['id' => 'wt_1', 'status' => 'COMPLETED', 'to_amount' => '9800', 'fee_amount' => '200', 'auto_approved_via' => 'MERCHANT'],
+        'code' => 200,
+    ]);
+    exit;
+}
+
 if ($path === '/transactions/' && $method === 'GET') {
     // Reflète TransactionListView (CreatedAtCursorPagination) : pas de "count".
     echo json_encode([

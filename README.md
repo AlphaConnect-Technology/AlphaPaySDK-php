@@ -161,6 +161,55 @@ try {
 }
 ```
 
+## Transferts interwallet
+
+Un marchand multi-pays dispose d'un wallet par pays. `walletTransfers`
+déplace des fonds de l'un à l'autre (conversion automatique si les devises
+diffèrent) — typiquement pour approvisionner le wallet du pays d'un
+bénéficiaire avant un payout Mobile Money. L'argent ne quitte jamais la
+plateforme.
+
+```php
+use AlphaPay\Exceptions\AlphaPayValidationException;
+use AlphaPay\Resources\WalletTransfersResource;
+
+try {
+    $transfer = $alphapay->walletTransfers->create(
+        ['from_country' => 'BJ', 'to_country' => 'CM', 'from_amount' => 100000],
+        "fund-cm-{$payoutId}" // Idempotency-Key : un retry ne réservera jamais deux fois
+    );
+} catch (AlphaPayValidationException $e) {
+    // 422 : same_country, transfer_already_pending, wallet_frozen, insufficient_balance
+    $reason = $e->getErrorCode();
+    return;
+}
+
+if ($transfer['status'] === WalletTransfersResource::STATUS_COMPLETED) {
+    // wallet CM crédité de $transfer['to_amount'] (déjà net de $transfer['fee_amount'])
+    // -> lancer le payout
+}
+
+// Plus tard : statut d'un transfert existant, ou liste filtrée
+$alphapay->walletTransfers->get($transfer['id']);
+$alphapay->walletTransfers->list(['status' => 'PENDING', 'to_country' => 'CM']);
+```
+
+À savoir :
+
+- **Scope de la clé** : `create()` exige une clé `PAYOUT` ou `BOTH` (sinon 403,
+  `getErrorCode() === 'api_key_scope_forbidden'`) ; `list()`/`get()` acceptent
+  toute clé du marchand.
+- **Statuts** : `PENDING` → `COMPLETED` ou `REJECTED` (`rejection_reason`).
+  Le transfert n'est `COMPLETED` dès la réponse que si l'auto-approbation est
+  activée pour votre compte par AlphaPay (`auto_approved_via` = `GLOBAL` ou
+  `MERCHANT`) ; sinon il attend la validation d'un admin AlphaPay. Écoutez
+  les webhooks `wallet_transfer.completed` / `wallet_transfer.rejected`
+  plutôt que d'interroger `get()` en boucle.
+- **Un seul transfert `PENDING` à la fois** par marchand (`transfer_already_pending`).
+- **Frais** : prélevés sur le montant converti — `to_amount` est déjà net,
+  `fee_amount` et `fee_percent_applied` détaillent le frais. Le taux de
+  change appliqué est figé dans `exchange_rate`.
+
 ## ⚠️ Sécurité — ce SDK est côté serveur uniquement
 
 La clé API (`sk_live_.../sk_test_...`) donne un accès complet au compte
@@ -180,7 +229,8 @@ publique.
 | `checkoutSessions` | `list`, `create`, `get`, `cancel` | ✅ |
 | `customers` | `list`, `create`, `get`, `update`, `delete`, `transactions` | ✅ |
 | `settlements` | `list`, `create`, `get`, `cancel` | ❌ dashboard-only |
-| `walletTransfers` | `list`, `create`, `get` | ❌ dashboard-only |
+| `walletTransfers` | `list`, `get` | ✅ |
+| `walletTransfers` | `create` | ✅ clé de scope `PAYOUT` ou `BOTH` |
 | `balances` | `list`, `get` | ✅ |
 | `balances` | `ledgerEntries` | ❌ dashboard-only |
 | `apiKeys` | `list`, `create`, `get`, `revoke`, `delete` | ❌ dashboard-only |

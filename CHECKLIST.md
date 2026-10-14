@@ -1,6 +1,6 @@
 # Avant publication Packagist
 
-Ce SDK est fonctionnel et testé (`composer test` : 11/11 tests PHPUnit,
+Ce SDK est fonctionnel et testé (`composer test` : 18/18 tests PHPUnit,
 contre un vrai serveur HTTP local — pas un mock, cf. `tests/Fixtures/router.php`).
 `list()`/`get()` des 9 ressources ont aussi été vérifiés en lecture seule
 contre une vraie clé LIVE sur `api.alphapay.me` — mêmes résultats que le SDK
@@ -97,9 +97,19 @@ réelles, pas seulement contre le serveur de test PHP intégré. À faire avant
 - [x] 9 ressources (voir tableau README), restrictions `dashboard_only`
       documentées par méthode dès l'écriture (reprises du SDK Node,
       vérifiées en conditions réelles côté Node).
-- [x] 11 tests PHPUnit verts, contre un vrai serveur HTTP local (pas un mock) :
+- [x] 18 tests PHPUnit verts, contre un vrai serveur HTTP local (pas un mock) :
       enveloppe, erreurs de validation, retry 429, épuisement des retries,
-      Idempotency-Key, pagination par curseur.
+      Idempotency-Key, pagination par curseur, liens de paiement publics,
+      transferts interwallet (création + Idempotency-Key, refus 422 avec
+      code métier, filtres de liste, statut).
+- [x] `walletTransfers` aligné sur AlphaPayBack `main` (2026-09-24) : ouvert
+      à la clé API (`create()` = scope PAYOUT/BOTH, `list()`/`get()` = toute
+      clé) — plus `dashboard_only`. Constantes `STATUS_*`, filtres
+      `from_country`/`to_country`, codes 422 et frais documentés.
+- [ ] Vérifier `walletTransfers->list()`/`get()` contre une vraie clé live
+      (lecture seule). **Jamais `create()` en live** : réserverait/déplacerait
+      réellement des fonds.
+- [ ] Taguer `v0.1.2` (le SDK Laravel, en `^0.1.1`, la récupère sans changement de contrainte).
 - [x] `list()`/`get()` des 9 ressources vérifiés en lecture seule contre une
       vraie clé live sur `api.alphapay.me` — formes de réponse et
       restrictions `dashboard_only` identiques au SDK Node.js.

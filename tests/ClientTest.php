@@ -8,6 +8,7 @@ use AlphaPay\AlphaPayClient;
 use AlphaPay\Exceptions\AlphaPayRateLimitException;
 use AlphaPay\Exceptions\AlphaPayValidationException;
 use AlphaPay\Pagination;
+use AlphaPay\Resources\WalletTransfersResource;
 use PHPUnit\Framework\TestCase;
 
 final class ClientTest extends TestCase
@@ -189,6 +190,55 @@ final class ClientTest extends TestCase
         $result = $client->http->request('POST', '/echo-headers/', [], [], true);
 
         self::assertNotEmpty($result['idempotencyKey']);
+    }
+
+    public function testCreatesAWalletTransferWithAnIdempotencyKey(): void
+    {
+        $client = new AlphaPayClient('sk_test_abc', self::$baseUrl);
+
+        $transfer = $client->walletTransfers->create(
+            ['from_country' => 'BJ', 'to_country' => 'CM', 'from_amount' => 10000],
+            'wt-intent-42'
+        );
+
+        self::assertSame(WalletTransfersResource::STATUS_PENDING, $transfer['status']);
+        self::assertSame('CM', $transfer['to_country']);
+        self::assertSame('wt-intent-42', $transfer['echo_idempotency_key']);
+    }
+
+    public function testMapsAWalletTransferBusinessRefusalToValidationExceptionWithItsCode(): void
+    {
+        $client = new AlphaPayClient('sk_test_abc', self::$baseUrl);
+
+        try {
+            $client->walletTransfers->create(['from_country' => 'BJ', 'to_country' => 'BJ', 'from_amount' => 10000]);
+            self::fail('Aurait dû lever AlphaPayValidationException.');
+        } catch (AlphaPayValidationException $e) {
+            self::assertSame(422, $e->getStatus());
+            self::assertSame('same_country', $e->getErrorCode());
+        }
+    }
+
+    public function testListsWalletTransfersWithCountryAndStatusFilters(): void
+    {
+        $client = new AlphaPayClient('sk_test_abc', self::$baseUrl);
+
+        $page = $client->walletTransfers->list(['status' => 'PENDING', 'from_country' => 'BJ', 'to_country' => 'CM']);
+
+        self::assertSame(
+            ['status' => 'PENDING', 'from_country' => 'BJ', 'to_country' => 'CM'],
+            $page['results'][0]['echo_query']
+        );
+    }
+
+    public function testGetsAWalletTransferStatus(): void
+    {
+        $client = new AlphaPayClient('sk_test_abc', self::$baseUrl);
+
+        $transfer = $client->walletTransfers->get('wt_1');
+
+        self::assertSame(WalletTransfersResource::STATUS_COMPLETED, $transfer['status']);
+        self::assertSame('200', $transfer['fee_amount']);
     }
 
     public function testPaginateFollowsTheCursorBasedNextLink(): void
