@@ -5,8 +5,7 @@ SDK PHP officiel pour l'API AlphaPay (agrégateur de paiement multi-gateway).
 > **Statut : v0.1.0, non publié.** Couvre les ressources marchand principales
 > (paiements, retraits, liens de paiement, checkout, clients, webhooks).
 > Conçu en miroir du [SDK Node.js](../AlphaPaySDK-node) — mêmes garanties,
-> mêmes restrictions d'API découvertes en conditions réelles. Voir
-> [CHECKLIST.md](./CHECKLIST.md) pour ce qui manque avant une publication Packagist.
+> mêmes restrictions d'API découvertes en conditions réelles.
 
 Aucune dépendance runtime — utilise `ext-curl` et `ext-json`, présentes sur
 quasiment tout hébergement PHP (y compris WordPress/WooCommerce).
